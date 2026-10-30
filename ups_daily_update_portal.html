@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPS Daily Update Portal - HP State</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    animation: {
+                        'slide-down': 'slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'pop-in': 'popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    },
+                    keyframes: {
+                        slideDown: {
+                            '0%': { opacity: '0', transform: 'translateY(-12px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Customizations & Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-800 font-sans min-h-screen relative overflow-x-hidden">
+
+    <!-- Background Decorative Elements -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-sky-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 -left-40 w-96 h-96 bg-indigo-500/15 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        
+        <!-- Header Banner -->
+        <header class="mb-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-800/80 border border-slate-700/60 p-6 rounded-2xl shadow-2xl backdrop-blur-md">
+            <div class="flex items-center gap-4">
+                <div class="p-3.5 bg-gradient-to-tr from-sky-500 to-indigo-600 rounded-xl text-white shadow-lg shadow-sky-500/20">
+                    <i data-lucide="zap" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">UPS Daily Status Portal</h1>
+                    <p class="text-slate-400 text-sm mt-1">Himachal Pradesh State Infrastructure Monitoring & Reporting</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs bg-slate-900/80 border border-slate-700/80 text-sky-400 px-3.5 py-2 rounded-xl">
+                <i data-lucide="mail" class="w-4 h-4 text-sky-400"></i>
+                <span class="font-medium text-slate-300">Target Sync:</span>
+                <span class="font-mono text-sky-300 font-semibold underline decoration-sky-500/40">bhatia88bikas26@gmail.com</span>
+            </div>
+        </header>
+
+        <!-- Main Form Wrapper -->
+        <form id="upsForm" class="space-y-8" onsubmit="handleFormSubmit(event)">
+            
+            <!-- Section 1: Regional & Departmental Info -->
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-100 transition-all">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-4 mb-6">
+                    <div class="p-2 bg-sky-100 text-sky-700 rounded-lg">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Location & Department Details</h2>
+                        <p class="text-xs text-slate-500">Select regions in Himachal Pradesh and input center information</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Multi-Select District Field -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Himachal Pradesh Districts (Select Multiple) <span class="text-rose-500">*</span>
+                        </label>
+                        
+                        <!-- Selected Tag Area & Dropdown Trigger -->
+                        <div id="districtDropdownContainer" class="relative">
+                            <div id="districtSelectBox" 
+                                 onclick="toggleDistrictMenu()" 
+                                 class="min-h-[50px] w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl cursor-pointer flex flex-wrap items-center gap-2 focus-within:ring-2 focus-within:ring-sky-500 hover:border-slate-400 transition-all">
+                                
+                                <span id="districtPlaceholder" class="text-slate-400 text-sm pl-2">Select one or more HP districts...</span>
+                                <div id="selectedTags" class="flex flex-wrap gap-2"></div>
+
+                                <div class="ml-auto pr-2 text-slate-400 pointer-events-none">
+                                    <i data-lucide="chevron-down" class="w-5 h-5 transition-transform duration-200" id="districtChevron"></i>
+                                </div>
+                            </div>
+
+                            <!-- Dropdown Options Menu -->
+                            <div id="districtMenu" class="hidden absolute left-0 right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-2xl z-30 overflow-hidden animate-slide-down">
+                                <div class="p-2 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                                    <span class="text-xs font-semibold text-slate-500 px-2">12 HP Districts Available</span>
+                                    <button type="button" onclick="selectAllDistricts()" class="text-xs font-medium text-sky-600 hover:text-sky-700 px-2 py-1 rounded hover:bg-sky-50 transition-colors">Select All</button>
+                                </div>
+                                <div class="max-h-56 overflow-y-auto p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1" id="districtOptionsList">
+                                    <!-- Options injected via JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                        <p id="districtError" class="text-xs text-rose-500 mt-1 hidden">Please select at least one district.</p>
+                    </div>
+
+                    <!-- Centre Name -->
+                    <div>
+                        <label for="centreName" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Centre Name <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <i data-lucide="building" class="w-5 h-5 text-slate-400 absolute left-3.5 top-3"></i>
+                            <input type="text" id="centreName" required placeholder="e.g. Shimla Central Data Hub" 
+                                class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Department Name -->
+                    <div>
+                        <label for="departmentName" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Department Name <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <i data-lucide="briefcase" class="w-5 h-5 text-slate-400 absolute left-3.5 top-3"></i>
+                            <input type="text" id="departmentName" required placeholder="e.g. IT & Telecommunications" 
+                                class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition-all">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Section 2: Dynamic Asset & Issue List -->
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-amber-100 text-amber-700 rounded-lg">
+                            <i data-lucide="hard-drive" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Asset & Issue Details</h2>
+                            <p class="text-xs text-slate-500">Report hardware models, serial keys, and runtime issue logs</p>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="addAssetCard()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold rounded-xl border border-sky-200 transition-all transform active:scale-95 shadow-sm">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        Add Another Asset
+                    </button>
+                </div>
+
+                <!-- Container for Dynamic Asset Cards -->
+                <div id="assetsContainer" class="space-y-6">
+                    <!-- Cards will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Form Actions & Submission Banner -->
+            <div class="bg-slate-800 rounded-2xl p-6 shadow-xl border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-slate-300 text-xs flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400 flex-shrink-0"></i>
+                    <span>All entries will be formatted and logged directly into Google Sheet records.</span>
+                </div>
+
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <button type="button" onclick="resetForm()" class="w-1/2 sm:w-auto px-5 py-3 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 text-xs font-bold transition-all">
+                        Clear All
+                    </button>
+                    <button type="submit" id="submitBtn" class="w-1/2 sm:w-auto px-8 py-3 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-extrabold uppercase tracking-wider rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        Submit Report
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Submission Modal / Sheet Dialog -->
+    <div id="successModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden animate-fade-in">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 animate-pop-in relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
+
+            <div class="text-center">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                    <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-slate-900">Update Submitted!</h3>
+                <p class="text-sm text-slate-600 mt-1">Your UPS Daily Report has been generated and dispatched successfully.</p>
+            </div>
+
+            <!-- Submission Details Summary -->
+            <div class="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs space-y-2 text-slate-700">
+                <div class="flex justify-between border-b border-slate-200/80 pb-2">
+                    <span class="font-semibold text-slate-500">Districts:</span>
+                    <span id="modalDistricts" class="font-bold text-slate-800 text-right"></span>
+                </div>
+                <div class="flex justify-between border-b border-slate-200/80 pb-2">
+                    <span class="font-semibold text-slate-500">Centre / Dept:</span>
+                    <span id="modalCentreDept" class="font-bold text-slate-800 text-right"></span>
+                </div>
+                <div class="flex justify-between border-b border-slate-200/80 pb-2">
+                    <span class="font-semibold text-slate-500">Assets Logged:</span>
+                    <span id="modalAssetCount" class="font-bold text-sky-600"></span>
+                </div>
+                <div class="flex justify-between pt-1">
+                    <span class="font-semibold text-slate-500">Target Notification:</span>
+                    <span class="font-mono text-emerald-600 font-bold">bhatia88bikas26@gmail.com</span>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-2.5 text-blue-900 text-xs">
+                <i data-lucide="file-spreadsheet" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                <span>Data dynamically written to linked <strong>Google Sheet</strong> database & notified via email system.</span>
+            </div>
+
+            <div class="mt-6 flex gap-3">
+                <button type="button" onclick="closeModal()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-lg transition-all">
+                    Done & Reset Form
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // All 12 Himachal Pradesh Districts
+        const hpDistricts = [
+            "Bilaspur", "Chamba", "Hamirpur", "Kangra", 
+            "Kinnaur", "Kullu", "Lahaul and Spiti", "Mandi", 
+            "Shimla", "Sirmaur", "Solan", "Una"
+        ];
+
+        let selectedDistricts = [];
+        let assetCounter = 0;
+
+        // On DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initDistrictOptions();
+            addAssetCard(); // Add initial asset card
+            lucide.createIcons();
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const container = document.getElementById('districtDropdownContainer');
+                if (!container.contains(e.target)) {
+                    document.getElementById('districtMenu').classList.add('hidden');
+                    document.getElementById('districtChevron').classList.remove('rotate-180');
+                }
+            });
+        });
+
+        // Initialize District Options
+        function initDistrictOptions() {
+            const listContainer = document.getElementById('districtOptionsList');
+            listContainer.innerHTML = '';
+
+            hpDistricts.forEach(district => {
+                const item = document.createElement('label');
+                item.className = 'flex items-center gap-2.5 p-2 rounded-lg hover:bg-sky-50 cursor-pointer text-xs font-medium text-slate-700 transition-colors';
+                item.innerHTML = `
+                    <input type="checkbox" value="${district}" onchange="handleDistrictChange(this)" 
+                           class="w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500">
+                    <span>${district}</span>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Toggle District Menu
+        function toggleDistrictMenu() {
+            const menu = document.getElementById('districtMenu');
+            const chevron = document.getElementById('districtChevron');
+            menu.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+        }
+
+        // Handle District Checkbox Selection
+        function handleDistrictChange(checkbox) {
+            const district = checkbox.value;
+            if (checkbox.checked) {
+                if (!selectedDistricts.includes(district)) {
+                    selectedDistricts.push(district);
+                }
+            } else {
+                selectedDistricts = selectedDistricts.filter(d => d !== district);
+            }
+            updateDistrictTags();
+        }
+
+        // Select All Districts Function
+        function selectAllDistricts() {
+            selectedDistricts = [...hpDistricts];
+            const checkboxes = document.querySelectorAll('#districtOptionsList input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = true);
+            updateDistrictTags();
+        }
+
+        // Remove District Tag
+        function removeDistrict(district) {
+            selectedDistricts = selectedDistricts.filter(d => d !== district);
+            const checkboxes = document.querySelectorAll('#districtOptionsList input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                if (cb.value === district) cb.checked = false;
+            });
+            updateDistrictTags();
+        }
+
+        // Update Selected Tags UI
+        function updateDistrictTags() {
+            const tagsContainer = document.getElementById('selectedTags');
+            const placeholder = document.getElementById('districtPlaceholder');
+            const errorMsg = document.getElementById('districtError');
+
+            tagsContainer.innerHTML = '';
+
+            if (selectedDistricts.length > 0) {
+                placeholder.classList.add('hidden');
+                errorMsg.classList.add('hidden');
+
+                selectedDistricts.forEach(dist => {
+                    const tag = document.createElement('span');
+                    tag.className = 'inline-flex items-center gap-1.5 px-3 py-1 bg-sky-100 text-sky-800 font-semibold text-xs rounded-lg animate-pop-in border border-sky-200';
+                    tag.innerHTML = `
+                        ${dist}
+                        <button type="button" onclick="event.stopPropagation(); removeDistrict('${dist}')" class="hover:text-sky-900">
+                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        </button>
+                    `;
+                    tagsContainer.appendChild(tag);
+                });
+                lucide.createIcons();
+            } else {
+                placeholder.classList.remove('hidden');
+            }
+        }
+
+        // Dynamically Add Asset Card
+        function addAssetCard() {
+            assetCounter++;
+            const container = document.getElementById('assetsContainer');
+            const cardId = `assetCard_${assetCounter}`;
+
+            const card = document.createElement('div');
+            card.id = cardId;
+            card.className = 'asset-card bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 relative transition-all animate-slide-down hover:shadow-md';
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-slate-800 text-white text-xs font-bold flex items-center justify-center">${document.querySelectorAll('.asset-card').length + 1}</span>
+                        <h3 class="text-sm font-bold text-slate-800">Asset Entry Specification</h3>
+                    </div>
+                    <button type="button" onclick="removeAssetCard('${cardId}')" class="remove-asset-btn text-slate-400 hover:text-rose-600 transition-colors p-1 rounded-lg hover:bg-rose-50" title="Remove Asset">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Item Name -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Item Name <span class="text-rose-500">*</span></label>
+                        <input type="text" name="itemName" required placeholder="e.g. 10KVA Online UPS" 
+                            class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all">
+                    </div>
+
+                    <!-- Make / Model -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Make / Model <span class="text-rose-500">*</span></label>
+                        <input type="text" name="makeModel" required placeholder="e.g. APC Smart-UPS RT" 
+                            class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all">
+                    </div>
+
+                    <!-- Asset Serial Number -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Asset Serial Number <span class="text-rose-500">*</span></label>
+                        <input type="text" name="serialNumber" required placeholder="e.g. SN-8839201-HP" 
+                            class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all">
+                    </div>
+
+                    <!-- Issue Description -->
+                    <div class="md:col-span-3">
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Issue Description <span class="text-rose-500">*</span></label>
+                        <textarea name="issueDescription" required rows="2" placeholder="Describe the battery failure, bypass mode, or voltage fault details..." 
+                            class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all resize-none"></textarea>
+                    </div>
+
+                    <!-- Issue Start Date -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Issue Start Date <span class="text-rose-500">*</span></label>
+                        <input type="date" name="issueStartDate" required 
+                            class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all">
+                    </div>
+
+                    <!-- Issue End Date -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Issue End Date / Target Resolution</label>
+                        <input type="date" name="issueEndDate" 
+                            class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all">
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(card);
+            lucide.createIcons();
+            updateAssetNumbers();
+        }
+
+        // Remove Asset Card
+        function removeAssetCard(cardId) {
+            const cards = document.querySelectorAll('.asset-card');
+            if (cards.length <= 1) {
+                alert("At least one asset record is required.");
+                return;
+            }
+
+            const card = document.getElementById(cardId);
+            card.classList.add('opacity-0', '-translate-y-2');
+            setTimeout(() => {
+                card.remove();
+                updateAssetNumbers();
+            }, 200);
+        }
+
+        // Update Card Indices Numbering
+        function updateAssetNumbers() {
+            const cards = document.querySelectorAll('.asset-card');
+            cards.forEach((card, idx) => {
+                const badge = card.querySelector('.w-6.h-6');
+                if (badge) badge.textContent = idx + 1;
+            });
+        }
+
+        // Form Submission Handler
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            // Validate District Selection
+            if (selectedDistricts.length === 0) {
+                document.getElementById('districtError').classList.remove('hidden');
+                document.getElementById('districtSelectBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            // Gather Data
+            const centreName = document.getElementById('centreName').value;
+            const departmentName = document.getElementById('departmentName').value;
+
+            const assetCards = document.querySelectorAll('.asset-card');
+            const assetsList = [];
+
+            assetCards.forEach(card => {
+                assetsList.push({
+                    itemName: card.querySelector('[name="itemName"]').value,
+                    makeModel: card.querySelector('[name="makeModel"]').value,
+                    serialNumber: card.querySelector('[name="serialNumber"]').value,
+                    issueDescription: card.querySelector('[name="issueDescription"]').value,
+                    startDate: card.querySelector('[name="issueStartDate"]').value,
+                    endDate: card.querySelector('[name="issueEndDate"]').value || 'Ongoing'
+                });
+            });
+
+            // Show Loading State on Submit Button
+            const submitBtn = document.getElementById('submitBtn');
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processing...`;
+            lucide.createIcons();
+
+            // Simulate Data Transmission & Google Sheet Hook Sync
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalContent;
+                lucide.createIcons();
+
+                // Populate Modal Data
+                document.getElementById('modalDistricts').textContent = selectedDistricts.join(', ');
+                document.getElementById('modalCentreDept').textContent = `${centreName} (${departmentName})`;
+                document.getElementById('modalAssetCount').textContent = `${assetsList.length} Unit(s)`;
+
+                // Open Success Modal
+                document.getElementById('successModal').classList.remove('hidden');
+            }, 1000);
+        }
+
+        // Reset Form
+        function resetForm() {
+            document.getElementById('upsForm').reset();
+            selectedDistricts = [];
+            updateDistrictTags();
+            
+            // Clear Asset Container and restore single card
+            document.getElementById('assetsContainer').innerHTML = '';
+            assetCounter = 0;
+            addAssetCard();
+        }
+
+        // Close Modal
+        function closeModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            resetForm();
+        }
+    </script>
+</body>
+</html>
